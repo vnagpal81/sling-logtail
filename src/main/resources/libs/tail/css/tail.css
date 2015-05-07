@@ -1,0 +1,102 @@
+.header-cont {
+    position:fixed;
+    top:0;
+    left:0;
+}
+
+.pulldown {
+    height:20px;
+    cursor:pointer;
+    background:#CCCCCC;
+    margin: 0 auto;
+    border-radius: 0 0 25px 25px;
+    text-align: center;
+}
+
+.header {
+    background:#F0F0F0;
+    border:1px solid #CCC;
+    margin:0px auto;
+    height:50px;
+    vertical-align:middle;
+}
+
+.header table td {
+	width:5%;
+    text-align:center;
+    vertical-align:middle;
+}
+
+.header table td.longer {
+    width:20%;
+}
+
+.header table td button {
+	cursor:pointer;
+}
+
+.content {
+	font:Courier-New;
+    font-size:9px;
+}
+
+.criteria-item {
+	cursor:pointer;
+}
+
+.criteria-item.selected {
+	background-color: #2B60DE;
+    color:white;
+}
+
+.highlight-content-inner-div {
+	float:left;
+    clear:both;
+    width:95%;
+    margin-bottom: 10px;
+}
+
+span.box {
+    min-width:50px;
+    text-overflow:clip;
+    border:1px solid black;
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-top:5px;
+    margin-bottom:5px;
+}
+
+.criteria-list {
+	padding: 0;
+    list-style:none;
+    margin:0;
+}
+
+#criteria {
+	min-height: 200px;
+    border:1px solid;
+}
+
+.lineNumberCol {
+	background-color: grey;
+	color: white;
+}
+
+#speed {
+    width:50px;
+}
+
+.loadingstatus li {
+	font-size:30px;
+	color:grey;
+	list-style: inherit !important;
+}
+
+.hide {
+    display: none;
+}
+
+.filterClear {
+  display: inline-block;
+  vertical-align: middle;
+}
