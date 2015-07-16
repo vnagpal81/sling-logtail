@@ -1,12 +1,15 @@
 package org.apache.sling.tail.impl;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.FileAppender;
 import org.apache.felix.scr.annotations.*;
+import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.webconsole.AbstractWebConsolePlugin;
 import org.apache.felix.webconsole.WebConsoleConstants;
 import org.apache.sling.commons.json.io.JSONWriter;
-import org.apache.sling.settings.SlingSettingsService;
 import org.apache.sling.tail.LogFilter;
-import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -48,9 +50,6 @@ public class LogTailerWebConsolePlugin extends AbstractWebConsolePlugin {
 
     private String fileName = "";
     private File errLog;
-
-    @Reference
-    private SlingSettingsService slingSettingsService;
 
     @Override
     protected void renderContent(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -282,7 +281,7 @@ public class LogTailerWebConsolePlugin extends AbstractWebConsolePlugin {
                 deleteCookie(response, FILTER_COOKIE);
                 deleteCookie(response, POSITION_COOKIE);
                 fileName = cmd.substring(5);
-                errLog = new File(slingSettingsService.getSlingHomePath() + "/logs/" + fileName);
+                errLog = new File(filePathMap.get(fileName));
                 if(!errLog.exists()) {
                     throw new ServletException("File " + fileName + " doesn't exist");
                 }
@@ -303,16 +302,33 @@ public class LogTailerWebConsolePlugin extends AbstractWebConsolePlugin {
         return TITLE;
     }
 
+    private HashMap<String, String> filePathMap = new HashMap<String, String>();
+
+    private String getKey(File file) {
+        if(!filePathMap.containsKey(file.getName())) {
+            filePathMap.put(file.getName(), file.getAbsolutePath());
+        }
+        return file.getName();
+    }
+
     private String getOptions() {
-        String slingHomePath = slingSettingsService.getSlingHomePath();
-        File logsDir = new File(slingHomePath + "/logs/");
-        File[] logFiles = logsDir.listFiles();
-        String logFilesHtml = "<option value=\"\"> - Select file - </option>";
-        for(File file : logFiles) {
-            if(file.isDirectory()) {
-                continue;
+        Set<String> logFiles = new HashSet<String>();
+        LoggerContext context = (LoggerContext)LoggerFactory.getILoggerFactory();
+        for (ch.qos.logback.classic.Logger logger : context.getLoggerList()) {
+            for (Iterator<Appender<ILoggingEvent>> index = logger.iteratorForAppenders(); index.hasNext();) {
+                Appender<ILoggingEvent> appender = index.next();
+                if(appender instanceof FileAppender) {
+                    FileAppender fileAppender = (FileAppender) appender;
+                    String logfilePath = fileAppender.getFile();
+                    logFiles.add(logfilePath);
+                }
             }
-            logFilesHtml += "<option value=\"" + file.getName() + "\">" + file.getName() + "</option>";
+        }
+
+        String logFilesHtml = "<option value=\"\"> - Select file - </option>";
+        for(String logFile : logFiles) {
+            File file = new File(logFile);
+            logFilesHtml += "<option value=\"" + getKey(file) + "\">" + file.getName() + "</option>";
         }
         return logFilesHtml;
     }
